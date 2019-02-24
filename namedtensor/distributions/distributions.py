@@ -2,6 +2,7 @@ from ..schema import _Schema
 from ..torch_helpers import NamedTensor
 import torch
 import torch.distributions
+from collections import OrderedDict
 
 
 class NamedDistribution:
@@ -11,11 +12,15 @@ class NamedDistribution:
         self._event_schema = _Schema.build(event_names, 0)
 
     @staticmethod
-    def build(init, *args, **kwargs):
+    def build(init, batch_names=(), event_names=(), param_names=(), *args, **kwargs):
+        shape = batch_names + event_names + param_names
+
         collect = []
 
         def fix(v):
             if isinstance(v, NamedTensor):
+                # need to check that v._schema._names == shape?
+                v._force_order(shape)
                 collect.append(v)
                 return v.values
             else:
@@ -25,11 +30,10 @@ class NamedDistribution:
         new_kwargs = {k: fix(v) for k, v in kwargs.items()}
         dist = init(*new_args, **new_kwargs)
 
-        c = collect[0]
         return NamedDistribution(
             dist,
-            c._schema._names[: len(dist._batch_shape)],
-            c._schema._names[len(dist._batch_shape) :],
+            batch_names,
+            event_names,
         )
 
     @property
@@ -40,7 +44,10 @@ class NamedDistribution:
     @property
     def event_shape(self):
         "Named event shape as an ordered dict"
-        return self._event_schema.ordered_dict(self._dist.event_shape)
+        event_shape = self._dist.event_shape
+        return (self._event_schema.ordered_dict(event_shape)
+            if len(event_shape) > 0
+            else OrderedDict())
 
     def _sample(self, fn, sizes, names):
         tensor = fn(torch.Size(sizes))
@@ -101,9 +108,11 @@ class NDistributions(type):
     def __getattr__(cls, name):
         if name in cls._build:
 
-            def call(*args, **kwargs):
+            def call(batch_names=(), event_names=(), param_names=(), *args, **kwargs):
                 return NamedDistribution.build(
-                    getattr(torch.distributions, name), *args, **kwargs
+                    getattr(torch.distributions, name),
+                    batch_names, event_names, param_names,
+                    *args, **kwargs,
                 )
 
             return call
