@@ -94,6 +94,19 @@ class NamedTensor(NamedTensorBase):
 
         return ntorch.dot(names, *((self,) + others))
 
+    def repeat(self, dim, N):
+        names = self._schema._names
+        present = dim in names
+        idx = self._schema.get(dim) if present else 0
+        L = len(names) if present else len(names) + 1
+        shape = tuple(1 if x != idx else N for x in range(L))
+        return NamedTensor(
+            (self.values if present else self.values.unsqueeze(0))
+                .repeat(*shape),
+            names if present else (dim,) + names
+        )
+
+
     # def access(self, dims):
     #     term = dims.split() + [d for d in self._schema._names if d not in dims]
     #     return self.transpose(*term)._tensor

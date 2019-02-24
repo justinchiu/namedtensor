@@ -207,6 +207,31 @@ class NamedTensorBase:
             order.append(d)
         return order
 
+    def _broadcast_order_shape(self, other, indim, outdim):
+        """
+        Outputs a two orders (list) that works for self and other.
+        Updates one dimension to another.
+        Also gives the shapes necessary to expand to a shared size.
+        """
+        self_order = [indim]
+        other_order = [outdim]
+        self_shape = [self.shape[indim]]
+        other_shape = [other.shape[outdim]]
+        exclude = {indim, outdim}
+        for d, s in other.shape.items():
+            if d not in self._schema._names and d not in exclude:
+                self_order.append(d)
+                other_order.append(d)
+                self_shape.append(s)
+                other_shape.append(s)
+        for d, s in self.shape.items():
+            if d not in exclude:
+                self_order.append(d)
+                other_order.append(d)
+                self_shape.append(s)
+                other_shape.append(s)
+        return self_order, other_order, self_shape, other_shape
+
     def _mask_broadcast_order(self, main):
         """
         If broadcasting possible from self (mask) to main, outputs a shared order.
