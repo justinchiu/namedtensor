@@ -71,6 +71,13 @@ class NTorch(type):
         return tuple(tensor._new(chunk) for chunk in tuple_of_chunks)
 
     @staticmethod
+    def split(tensor, split_size_or_sections, dim):
+        splits = tensor._tensor.split(
+            split_size_or_sections, dim=tensor._schema.get(dim)
+        )
+        return tuple(tensor._new(split) for split in splits)
+
+    @staticmethod
     def stack(tensors, name):
         old_names = tensors[0]._schema._names
         for i in range(1, len(tensors)):

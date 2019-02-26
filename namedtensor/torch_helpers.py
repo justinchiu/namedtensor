@@ -476,6 +476,7 @@ doc is the same as below.
         "equal",
         "unique",
         "chunk",
+        "split",
     }
 
     # def gather(self, dim, index, index_dim):
