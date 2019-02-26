@@ -62,6 +62,9 @@ class NamedDistribution:
     def rsample(self, sizes=(), names=()):
         return self._sample(self._dist.rsample, sizes, names)
 
+    def enumerate_support(self, sizes=(), names=()):
+        return self._sample(self._dist.enumerate_support, sizes, names)
+
     def __getattr__(self, name):
         if name in self._batch_methods:
 
