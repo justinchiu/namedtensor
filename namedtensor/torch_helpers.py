@@ -106,6 +106,20 @@ class NamedTensor(NamedTensorBase):
             names if present else (dim,) + names
         )
 
+    # just one
+    def expand(self, dim, N):
+        names = self._schema._names
+        present = dim in names
+        idx = self._schema.get(dim) if present else 0
+        shape = tuple(self.shape.values())
+        if not present:
+            shape = (N,) + shape
+        return NamedTensor(
+            (self.values if present else self.values.unsqueeze(0))
+                .expand(*shape),
+            names if present else (dim,) + names
+        )
+
 
     # def access(self, dims):
     #     term = dims.split() + [d for d in self._schema._names if d not in dims]
