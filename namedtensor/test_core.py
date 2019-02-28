@@ -85,7 +85,7 @@ def test_rename(data, x):
 def test_split(data, x):
     s = data.draw(dim(x))
     ns = list(data.draw(names(x)))
-    x2 = x.split(s, ns, **{n: 1 for n in ns[:-1]})
+    x2 = x.chop(s, ns, **{n: 1 for n in ns[:-1]})
     assert len(set(ns) & set(x2.dims)) == len(ns)
     assert s not in x2.dims
     assert torch.prod(torch.tensor([x2.shape[n] for n in ns])) == x.shape[s]

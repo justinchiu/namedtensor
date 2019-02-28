@@ -66,7 +66,7 @@ class _Update:
                 out = out.squeeze("tmpdim")
 
             elif unsplit_dim:
-                out = out.split("tmpdim", extra, **sizes)
+                out = out.chop("tmpdim", extra, **sizes)
             if "tmpdim2" in out.shape:
                 out = out.squeeze("tmpdim2")
             return out
@@ -113,7 +113,7 @@ class _Loss:
             target = target.transpose(*target_order)
             out = input.reduce2(target, super(_Loss, self).forward, reduced)
             if self.reduction == "none":
-                out = out.split("tmpdim", to_batch, **sizes)
+                out = out.chop("tmpdim", to_batch, **sizes)
             return out
 
         else:
