@@ -125,6 +125,8 @@ class NamedTensorBase:
 
     def transpose(self, *dims):
         "Return a new DataArray object with transposed dimensions."
+        if not dims:
+            return self
         for dim in dims:
             self._schema.get(dim)
         to_dims = (
@@ -194,7 +196,9 @@ class NamedTensorBase:
                 view.append(self.shape[d])
                 trans.append(d)
         return self.__class__(
-            self.transpose(*trans)._tensor.contiguous().view(*view), ex
+            self.transpose(*trans)._tensor.contiguous().view(*view)
+            if view else self._tensor,
+            ex,
         )
 
     def _broadcast_order(self, other):
