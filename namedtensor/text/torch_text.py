@@ -30,7 +30,7 @@ class NamedField(torchtext.data.Field):
 
             # Compute the mask based on lengths
             idxs = torch.arange(0, max(lengths)).to(lengths)
-            mask = idxs.repeat(len(lengths), 1) >= lengths.unsqueeze(-1)
+            mask = idxs.repeat(len(lengths), 1) < lengths.unsqueeze(-1)
             mask = NamedTensor(mask, names=("batch",) + self.names)
 
             # Convert lengths to NamedTensor
